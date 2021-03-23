@@ -24,7 +24,7 @@ const server = require('http').Server(app);
 
 const io = require('socket.io')(server, {
   cors: {
-    origin: 'https://sendit.netlify.app/',
+    origin: 'https://sendit.netlify.app',
     methods: ['GET', 'POST'],
   },
 });
