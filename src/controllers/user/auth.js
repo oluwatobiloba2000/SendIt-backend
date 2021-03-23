@@ -34,13 +34,7 @@ class UserAuthentication {
 
             const insertedUser = await createUser(req.body);
 
-            return jwt.sign({
-                id: insertedUser.data.id,
-                email: insertedUser.data.email,
-                profile_pics: insertedUser.data.profile_pics,
-                firstname: insertedUser.data.firstname,
-                address: insertedUser.data.address
-            }, process.env.USER_JWT_KEY, { expiresIn: '7d' }, async (err, token) => {
+            return jwt.sign(insertedUser.data, process.env.USER_JWT_KEY, { expiresIn: '60d' }, async (err, token) => {
                 if (err) {
                     return res.status(403).send(err);
                 }
@@ -50,7 +44,6 @@ class UserAuthentication {
                 })
             });
         } catch (error) {
-            console.log({error})
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -80,13 +73,7 @@ class UserAuthentication {
                 );
 
                 if (match) {
-                    return jwt.sign({
-                        id: userExist.data.id,
-                        email: userExist.data.email,
-                        profile_pics: userExist.data.profile_pics,
-                        firstname: userExist.data.firstname,
-                        address: userExist.data.address
-                    }, process.env.USER_JWT_KEY, { expiresIn: '30d' }, async (err, token) => {
+                    return jwt.sign(userExist.data, process.env.USER_JWT_KEY, { expiresIn: '60d' }, async (err, token) => {
                         if (err) {
                             return res.status(403).send(err);
                         }
@@ -99,9 +86,23 @@ class UserAuthentication {
                 }
                 return httpResponse.error(res, UNAUTHORIZED_CODE, 'incorrect email or password');
             }
-            return httpResponse.error(res, UNAUTHORIZED_CODE, 'email does not exist');
+            return httpResponse.error(res, 404, 'email does not exist');
         } catch (error) {
             return httpResponse.error(res, 500, error.message, 'server error');
+        }
+    }
+
+    static async verifyUserToken(req, res) {
+        try {
+           return jwt.verify(req.token, process.env.USER_JWT_KEY, function(err, decoded) {
+                if (err) {
+                  return httpResponse.error(res, 401, 'invalid token', err );
+                }else{
+                 return httpResponse.success(res, OK_CODE, 'valid', {user: decoded})
+                }
+            });
+        } catch (error) {
+            return httpResponse.error(res, 500, 'Internal server error');
         }
     }
 }

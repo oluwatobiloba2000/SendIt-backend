@@ -61,7 +61,6 @@ class UserOrder {
 
             return httpResponse.success(res, CREATED_CODE, 'order created success', insertedOrder)
         } catch (error) {
-            console.log({ error })
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -72,20 +71,18 @@ class UserOrder {
 
             return httpResponse.success(res, OK_CODE, 'orders fetched success', allOrder)
         } catch (error) {
-            console.log({ error })
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
 
     static async getOrderByTrackingId(req, res) {
         const { track_id } = req.params;
-        console.log({ track_id })
         try {
             const orderDetails = await getOrderWithTrackNumber(track_id);
-
+            if(!orderDetails.data.parcel || !orderDetails.data.order)
+             return httpResponse.error(res, 404, 'not found', 'not found');
             return httpResponse.success(res, OK_CODE, 'order details fetched success', orderDetails)
         } catch (error) {
-            console.log({ error })
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -97,7 +94,6 @@ class UserOrder {
             const orderAnalytics = await getOrderAnanlytics(user_id);
             return httpResponse.success(res, OK_CODE, 'order analytics fetched success', orderAnalytics)
         } catch (error) {
-            console.log({ error })
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -106,18 +102,17 @@ class UserOrder {
     static async searchOrder(req, res) {
         const order_name = req.query.order_name || null;
         const track_id = req.query.track_id || null;
-        const order_status = req.order_status || 'Pending';
+        // const order_status = req.order_status || 'Pending';
         const { id: user_id} = req.user;
 
         if(!(track_id || order_name))
          return httpResponse.error(res, BAD_REQUEST_CODE, 'track_id or order_name query is required', 'validation error');
 
         try {
-            const searchedOrder = await getSearchOrder({order_name, order_status, track_id, user_id});
+            const searchedOrder = await getSearchOrder({order_name, track_id, user_id});
             return httpResponse.success(res, OK_CODE, 'search fetched success', searchedOrder)
 
         } catch (error) {
-            console.log(error)
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -141,7 +136,6 @@ class UserOrder {
             }
 
         } catch (error) {
-            console.log(error)
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -162,14 +156,13 @@ class UserOrder {
                 if(orderDetails.data.order.order_status === 'Delivered'){
                     return httpResponse.error(res, BAD_REQUEST_CODE, 'order has been delivered' ,'cannot cancel order');
                 }
-                const changedLocOrder =  await changedOrderLocation({parcel_pickup_location, parcel_delivery_location}, track_id);
+                const changedLocOrder =  await changedOrderLocation({parcel_pickup_location, parcel_delivery_location, track_id, order_details: orderDetails.data});
                 if(!changedLocOrder.error) return httpResponse.success(res, OK_CODE, 'order location change success', changedLocOrder.data)
             }else{
                 return httpResponse.error(res, BAD_REQUEST_CODE, 'not allowed' ,'only order owners are allowed');
             }
 
         } catch (error) {
-            console.log(error)
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }

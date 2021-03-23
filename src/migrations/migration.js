@@ -85,7 +85,7 @@ const createParcelActivityQuery = `
     CREATE TABLE IF NOT EXISTS
     parcel_activity(
         id UUID PRIMARY KEY UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
-        parcel_track_id VARCHAR UNIQUE NOT NULL,
+        parcel_track_id VARCHAR NOT NULL,
         activity_content VARCHAR NOT NULL,
         createdat TIMESTAMP DEFAULT NOW(),
         FOREIGN KEY (parcel_track_id) REFERENCES "parcel" (track_number) ON DELETE CASCADE

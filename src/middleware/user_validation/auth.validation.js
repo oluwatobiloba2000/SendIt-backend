@@ -16,10 +16,10 @@ const validate = {
   } = obj) => {
     const JoiSchema = Joi.object({
       email: Joi.string().email().required(),
-      firstname: Joi.string().min(3).required(),
+      firstname: Joi.string().min(2).required(),
       lastname: Joi.string().min(3).required(),
-      password: Joi.string().min(5).required(),
       address: Joi.string().min(3).required(),
+      password: Joi.string().min(4).required(),
       phone: Joi.string().min(3).required(),
     });
 

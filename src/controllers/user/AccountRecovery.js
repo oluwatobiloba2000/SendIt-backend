@@ -19,7 +19,6 @@ class AccountRecovery {
             }
             return httpResponse.error(res, 404, 'email not found', 'email not found');
         } catch (error) {
-            console.log(error)
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }
@@ -31,23 +30,21 @@ class AccountRecovery {
         if (validationError.error) return httpResponse.error(res, 400, validationError.error, 'validation error');
 
         try {
-            const userExist = await getUserByEmail(req.query);
-            console.log("🚀 ~ file: AccountRecovery.js ~ line 38 ~ AccountRecovery ~ ResetPassword ~ userExist", userExist)
+            const userExist  = await getUserByEmail({email})
             const match = await bcrypt.compare(
                 token,
-                userExist.data.forgot_password_token,
+                userExist.data.forgot_password_token
             );
             
             if(!match)
              return httpResponse.error(res, 400, 'invalid token', 'invalid token');
 
             const user = await changePassword({token, email, password });
-            console.log({user})
             if (user.error) return httpResponse.error(res, 400, 'invalid token', 'token has expired');
             return httpResponse.success(res, OK_CODE, 'password reset success', user.data);
 
         } catch (error) {
-            console.log(error)
+            console.log("🚀 ~ file: AccountRecovery.js ~ line 46 ~ AccountRecovery ~ ResetPassword ~ error", {error})
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');
         }
     }

@@ -21,7 +21,8 @@ class CompanyOrder {
 
         try {
             const orderDetails = await getOrderWithTrackNumber(track_id);
-
+            if(!orderDetails.data.parcel || !orderDetails.data.order)
+             return httpResponse.error(res, 404, 'not found', 'not found');
             return httpResponse.success(res, OK_CODE, 'order details fetched success', orderDetails)
         } catch (error) {
             console.log({ error })
@@ -45,11 +46,11 @@ class CompanyOrder {
     static async searchOrder(req, res) {
         const order_name = req.query.order_name || null;
         const track_id = req.query.track_id || null;
-        const order_status = req.order_status || 'Pending';
+        const order_status = req.query.order_status || 'Approved';
         const { id: company_id } = req.company;
 
-        if (!(track_id || order_name))
-            return httpResponse.error(res, BAD_REQUEST_CODE, 'track_id or order_name query is required', 'validation error');
+        // if (!(track_id || order_name))
+        //     return httpResponse.error(res, BAD_REQUEST_CODE, 'track_id or order_name query is required', 'validation error');
 
         try {
             const searchedOrder = await getSearchOrderCompany({ order_name, order_status, track_id, company_id });
@@ -129,15 +130,18 @@ class CompanyOrder {
             activity_content
         } = req.body;
         const { track_id } = req.query;
-        const { id: company_id } = req.company;
+        // const { id: company_id } = req.company;
 
-        const validationError = validate.order_activity({ track_id, activity_content });
-        if (validationError.error) return httpResponse.error(res, BAD_REQUEST_CODE, validationError.error, 'validation error');
+        // const validationError = validate.order_activity({ track_id, activity_content });
+        if (!activity_content && !track_id) return httpResponse.error(res, BAD_REQUEST_CODE, 'all fields are required', 'validation error');
 
         try {
-            const orderDetails = await getOrderWithTrackNumber({ track_id });
-            if (orderDetails.data.order && orderDetails.data.order.delivery_company_id === company_id) {
-                const sentOrderActivity = await sendOrderActivities({ track_id, company_id, activity_content });
+            const orderDetails = await getOrderWithTrackNumber(track_id);
+            if(!orderDetails.data.parcel || !orderDetails.data.order){
+                return httpResponse.error(res, 404, 'order not found', 'not found')
+            }
+            else if (orderDetails.data.order) {
+                const sentOrderActivity = await sendOrderActivities({ track_id, activity_content });
                 if (!sentOrderActivity.error) return httpResponse.success(res, OK_CODE, 'order activity sent', sentOrderActivity.data)
             } else {
                 return httpResponse.error(res, BAD_REQUEST_CODE, 'not allowed', 'this company is not allowed to send an activity');
@@ -181,7 +185,7 @@ class CompanyOrder {
         try {
             const allPendingOrder = await getAllPendingOrderRepo();
 
-            return httpResponse.success(res, OK_CODE, 'pending orders fetched success', allPendingOrder)
+            return httpResponse.success(res, OK_CODE, 'pending orders fetched success', allPendingOrder.data)
         } catch (error) {
             console.log({ error })
             return httpResponse.error(res, SERVER_FAILURE_CODE, 'Internal server error');

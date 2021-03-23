@@ -38,10 +38,11 @@ class Upload {
             data: result,
           });
         })
-        .catch((err) => res.status(500).json({
-          message: ` Error from server ${err}`,
-        }));
-    } catch (err) {
+        .catch((err) =>{
+          return res.status(500).json({
+          message: `Network Error`
+        })})
+      } catch (err) {
       return res.status(500).json({
         message: ' Error from server',
       });

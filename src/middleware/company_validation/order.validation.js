@@ -15,7 +15,7 @@ const validate = {
     track_id, status
   } = obj) => {
     const JoiSchema = Joi.object({
-        status: Joi.string().min(3).valid('In transit').valid('Delayed').valid('Cancelled').valid('Delivered').required(),
+        status: Joi.string().min(3).valid('In Transit').valid('Delayed').valid('Cancelled').valid('Delivered').required(),
         track_id: Joi.string().min(3).required(),
     });
 

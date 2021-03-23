@@ -30,7 +30,7 @@ class CompanyAuthentication {
         try {
 
             const companyExist = await getCompanyByEmail(req.body);
-            if (companyExist.error === false) return httpResponse.error(res, BAD_REQUEST_CODE, 'email already exist', true);
+            if (companyExist.error === false) return httpResponse.error(res, 400, 'email already exist', true);
 
             const insertedCompany = await createCompany(req.body);
 
@@ -101,6 +101,20 @@ class CompanyAuthentication {
             return httpResponse.error(res, 404, 'email does not exist');
         } catch (error) {
           return httpResponse.error(res, 500, error.message, 'server error');
+        }
+    }
+
+    static async verifyCompanyToken(req, res) {
+        try {
+           return jwt.verify(req.token, process.env.COMPANY_JWT_KEY, function(err, decoded) {
+                if (err) {
+                  return httpResponse.error(res, 401, 'invalid token', err );
+                }else{
+                 return httpResponse.success(res, OK_CODE, 'valid', {user: decoded})
+                }
+            });
+        } catch (error) {
+            return httpResponse.error(res, 500, 'Internal server error');
         }
     }
 }
