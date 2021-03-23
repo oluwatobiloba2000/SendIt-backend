@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import httpResponse from '../../helpers/http-response';
 import validate from '../../middleware/user_validation/order.validation';
 import { cancelOrder, changedOrderLocation, createOrder, getAllOrderForUser, getOrderAnanlytics, getOrderWithTrackNumber, getSearchOrder } from '../../repository/user';
-import { BAD_REQUEST_CODE, CREATED_CODE, OK_CODE, SERVER_FAILURE_CODE, UNAUTHORIZED_CODE } from '../../helpers/constants';
+import { BAD_REQUEST_CODE, CREATED_CODE, OK_CODE, SERVER_FAILURE_CODE } from '../../helpers/constants';
 
 /**
  * @class User Order
@@ -102,7 +102,6 @@ class UserOrder {
     static async searchOrder(req, res) {
         const order_name = req.query.order_name || null;
         const track_id = req.query.track_id || null;
-        // const order_status = req.order_status || 'Pending';
         const { id: user_id} = req.user;
 
         if(!(track_id || order_name))

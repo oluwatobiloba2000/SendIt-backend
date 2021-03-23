@@ -209,7 +209,7 @@ export async function getSearchOrder({ order_name, track_id, user_id }) {
     const searchedOrder = await db.query(
         `SELECT *,parcel_track_id AS track_number FROM orders
         WHERE order_package ILIKE ($1) OR  parcel_track_id ILIKE ($2) AND  user_id=$3`,
-        [`%${order_name}%`, `%${track_id}%`, `%${user_id}%`]);
+        [`%${order_name}%`, `%${track_id}%`, `${user_id}`]);
     return {
         error: false,
         message: 'search exist',
